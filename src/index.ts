@@ -3,6 +3,7 @@ import { expressMiddleware } from '@as-integrations/express5';
 import cors from "cors"
 import bodyParser from "body-parser"
 import createApolloGraphQlServer from "./graphql";
+import { router } from "./routes";
 
 async function serverInit() {
     const app = express()
@@ -12,12 +13,10 @@ async function serverInit() {
     app.use(cors());
     app.use(bodyParser.json());
 
-    app.get('/', (req, res) => {
-        res.json({msg: "Server is up"})
-    })
+    app.use('/', router)
 
     app.use(
-    '/graphql',
+    '/v1/graphql',
     cors<cors.CorsRequest>(),
     express.json(),
     expressMiddleware(await createApolloGraphQlServer()),
