@@ -1,18 +1,35 @@
-import { prismaClient } from "../../lib/db";
+import { MeiliSearch } from "meilisearch"
+import { prismaClient } from "../../lib/db"
+
+const client = new MeiliSearch({
+  host: "http://localhost:7700",
+  apiKey: "sarang",
+})
 
 const queries = {
+    searchProducts: async (_: any, args: { q: string }) => {
+      try {
+        const index = client.index("products")
+        const res = await index.search(args.q, { limit: 10 })
+        return res.hits
+      } catch (err) {
+        console.error("Meilisearch error:", err)
+        return []
+      }
+    },
+    getProductDetails: async(__: any, {productId}: {productId: Number}) => {
+      const product = await prismaClient.product.findUnique({
+        where: { id: Number(productId) },
+        include: {
+          seller: true,
+        },
+      });
+    }
 
 }
 
 const mutations = {
-    createUser: async(__: any, {firstName, lastName, email, password, phone}: {firstName: string, lastName: string, email: string, password: string, phone: string}) => {
-        await prismaClient.user.create({
-            data: {
-                email, firstName, lastName, password, phone
-            }
-        })
-        return true;
-    }
+
 }
 
 export const resolvers = { queries, mutations }

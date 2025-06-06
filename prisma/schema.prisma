@@ -27,3 +27,49 @@ enum Gender {
   Female
   other
 }
+
+model Seller {
+  id                  Int          @id @default(autoincrement())
+  company_name        String       @unique
+  contact_person      String?
+  email               String       @unique
+  phone               String?      @unique
+  gst_number          String       @unique
+  drug_license_number String
+  license_valid_until DateTime?
+  address             String?
+  city                String?
+  state               String?
+  pincode             String?
+  country             String?      @default("India")
+  password            String
+  is_verified         Boolean      @default(false)
+  created_at          DateTime     @default(now())
+
+  products            Product[]    @relation("SellerProducts")
+
+  @@map("tblseller")
+}
+
+model Product {
+  id                   Int       @id @default(autoincrement())
+  title                String
+  seller_id            Int
+  rating               Decimal?  @db.Decimal(10, 2)
+  mrp                  Decimal?  @db.Decimal(10, 2)
+  image                String?
+  current_price        Decimal?  @db.Decimal(10, 2)
+  offers               String[]  @db.Text
+  tags                 String[]  @db.Text
+  highlights           String[]  @db.Text
+  product_details      String?
+  manufacturer_details String?
+  marketer_details     String?
+  country_of_origin    String?
+  expires_on_or_after  DateTime?
+  created_at           DateTime  @default(now())
+
+  seller               Seller     @relation("SellerProducts", fields: [seller_id], references: [id])
+
+  @@map("tblproducts")
+}

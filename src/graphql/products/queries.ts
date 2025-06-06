@@ -1,3 +1,4 @@
 export const queries = `
-    hello: String
+    searchProducts(q: String!): [ProductCard!]!
+    getProductDetails(productId: Int!): Product!
 `

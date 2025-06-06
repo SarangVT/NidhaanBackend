@@ -18,6 +18,7 @@
     "express": "^5.1.0",
     "google-auth-library": "^9.15.1",
     "graphql": "^16.11.0",
+    "meilisearch": "^0.50.0",
     "pg": "^8.16.0",
     "tsx": "^4.19.4"
   },
