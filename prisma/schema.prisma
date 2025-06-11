@@ -29,26 +29,63 @@ enum Gender {
 }
 
 model Seller {
-  id                  Int          @id @default(autoincrement())
-  company_name        String       @unique
-  contact_person      String?
-  email               String       @unique
-  phone               String?      @unique
-  gst_number          String       @unique
-  drug_license_number String
-  license_valid_until DateTime?
-  address             String?
-  city                String?
-  state               String?
-  pincode             String?
-  country             String?      @default("India")
-  password            String
-  is_verified         Boolean      @default(false)
-  created_at          DateTime     @default(now())
+  id                Int         @id @default(autoincrement())
+  companyName       String
+  contactPerson     String
+  phone             String      @unique
+  email             String      @unique
+  address           String
+  pincode           String
+  city              String
+  state             String
+  latitude          Float?
+  longitude         Float?
+  gstin             String?
+  drugLicenseNumber String
+  pharmacistName    String
+  pharmacistRegNo   String
+  storeTimings      String?
+  workingDays       String?
+  deliveryRadiusKm  Float?
+  preferredNotify   NotificationMethod @default(WHATSAPP)
+  maxOrdersPerDay   Int?
+  acceptsReturns    Boolean     @default(false)
+  status            SellerStatus @default(PENDING)
+  products          Product[] @relation("SellerProducts")
+  documents         SellerDocument[]
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}
 
-  products            Product[]    @relation("SellerProducts")
+model SellerDocument {
+  id        Int      @id @default(autoincrement())
+  seller    Seller   @relation(fields: [sellerId], references: [id])
+  sellerId  Int
+  type      DocumentType
+  url       String
+  uploadedAt DateTime @default(now())
+}
 
-  @@map("tblseller")
+enum NotificationMethod {
+  APP
+  WHATSAPP
+  SMS
+  EMAIL
+}
+
+enum DocumentType {
+  DRUG_LICENSE
+  GST_CERTIFICATE
+  PHARMACIST_CERTIFICATE
+  PAN_CARD
+  OTHER
+}
+
+enum SellerStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
 }
 
 model Product {

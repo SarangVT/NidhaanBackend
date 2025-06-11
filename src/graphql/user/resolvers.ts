@@ -64,7 +64,7 @@ const mutations = {
         });
 
         const token = jwt.sign(
-        { userId: fullUser.id, email: fullUser.email },
+        { userId: fullUser.id, email: fullUser.email, phone: fullUser.phone },
         JWT_SECRET,
         { expiresIn: "7d" }
         );
@@ -126,7 +126,7 @@ const mutations = {
 
         const token = jwt.sign(
         {
-            id: user.id,
+            userId: user.id,
             email: user.email,
             phone: user.phone,
         },

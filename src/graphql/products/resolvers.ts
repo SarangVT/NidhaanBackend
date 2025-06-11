@@ -25,7 +25,6 @@ const queries = {
         },
       });
     }
-
 }
 
 const mutations = {
