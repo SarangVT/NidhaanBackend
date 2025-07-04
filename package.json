@@ -10,14 +10,18 @@
   "dependencies": {
     "@apollo/server": "^4.12.2",
     "@as-integrations/express5": "^1.0.0",
+    "@aws-sdk/client-s3": "3.832.0",
+    "@aws-sdk/s3-request-presigner": "3.832.0",
     "@prisma/client": "^6.9.0",
     "axios": "^1.9.0",
+    "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "google-auth-library": "^9.15.1",
     "graphql": "^16.11.0",
+    "jsonwebtoken": "^9.0.2",
     "meilisearch": "^0.50.0",
     "pg": "^8.16.0",
     "tsx": "^4.19.4"

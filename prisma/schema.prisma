@@ -18,7 +18,7 @@ model User {
   dateOfBirth DateTime? @map("date_of_birth")
   country     String?   @default("India")
   createdAt   DateTime  @default(now()) @map("created_at")
-
+  orders      Order[]
   @@map("users")
 }
 
@@ -29,40 +29,50 @@ enum Gender {
 }
 
 model Seller {
-  id                Int         @id @default(autoincrement())
-  companyName       String
-  contactPerson     String
-  phone             String      @unique
-  email             String      @unique
-  address           String
-  pincode           String
-  city              String
-  state             String
-  latitude          Float?
-  longitude         Float?
+  id                Int               @id @default(autoincrement())
+  companyName       String?
+  contactPerson     String?
+  phone             String            @unique
+  email             String            @unique
+  password          String
   gstin             String?
-  drugLicenseNumber String
-  pharmacistName    String
-  pharmacistRegNo   String
+  preferredNotify   NotificationMethod @default(WHATSAPP)
+  maxOrdersPerDay   Int?
+  status            SellerStatus      @default(PENDING)
+  products          Product[]         @relation("SellerProducts")
+  stores            SellerStore[]     @relation("SellerToStores")
+  documents         SellerDocument[]  @relation("SellerToDocuments")
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model SellerStore {
+  id                Int      @id @default(autoincrement())
+  sellerId          Int
+  seller            Seller   @relation("SellerToStores", fields: [sellerId], references: [id])
+  storeName         String?
+  drugLicenseNumber String?
+  pharmacistName    String?
+  pharmacistRegNo   String?
   storeTimings      String?
   workingDays       String?
   deliveryRadiusKm  Float?
-  preferredNotify   NotificationMethod @default(WHATSAPP)
-  maxOrdersPerDay   Int?
-  acceptsReturns    Boolean     @default(false)
-  status            SellerStatus @default(PENDING)
-  products          Product[] @relation("SellerProducts")
-  documents         SellerDocument[]
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  address           String?
+  pincode           String?
+  city              String?
+  state             String?
+  latitude          Float?
+  longitude         Float?
+  acceptsReturns    Boolean           @default(false)
+  orders            Order[]
 }
 
 model SellerDocument {
-  id        Int      @id @default(autoincrement())
-  seller    Seller   @relation(fields: [sellerId], references: [id])
-  sellerId  Int
-  type      DocumentType
-  url       String
+  id         Int      @id @default(autoincrement())
+  sellerId   Int
+  seller     Seller   @relation("SellerToDocuments", fields: [sellerId], references: [id])
+  type       DocumentType
+  url        String
   uploadedAt DateTime @default(now())
 }
 
@@ -89,24 +99,96 @@ enum SellerStatus {
 }
 
 model Product {
-  id                   Int       @id @default(autoincrement())
+  id                   Int                 @id @default(autoincrement())
   title                String
   seller_id            Int
-  rating               Decimal?  @db.Decimal(10, 2)
-  mrp                  Decimal?  @db.Decimal(10, 2)
+  rating               Decimal?            @db.Decimal(10, 2)
+  mrp                  Decimal?            @db.Decimal(10, 2)
   image                String?
-  current_price        Decimal?  @db.Decimal(10, 2)
-  offers               String[]  @db.Text
-  tags                 String[]  @db.Text
-  highlights           String[]  @db.Text
+  current_price        Decimal?            @db.Decimal(10, 2)
+  offers               String[]            @db.Text
+  tags                 String[]            @db.Text
+  highlights           String[]            @db.Text
   product_details      String?
   manufacturer_details String?
   marketer_details     String?
   country_of_origin    String?
   expires_on_or_after  DateTime?
-  created_at           DateTime  @default(now())
-
-  seller               Seller     @relation("SellerProducts", fields: [seller_id], references: [id])
-
+  created_at           DateTime            @default(now())
+  seller               Seller              @relation("SellerProducts", fields: [seller_id], references: [id])
+  customProperties     CustomProperty[]    @relation("ProductCustomProperties")
+  reviews              ProductReview[]     @relation("ProductToReviews")
+  orders               OrderItem[]
   @@map("tblproducts")
+}
+
+model ProductReview {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  userName    String
+  rating      Decimal   @db.Decimal(2, 1)
+  title       String?
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  product     Product   @relation("ProductToReviews", fields: [productId], references: [id])
+
+  @@map("tblproductreviews")
+}
+
+model CustomProperty {
+  id          Int      @id @default(autoincrement())
+  product_id  Int
+  name        String
+  value       String?
+
+  product     Product  @relation("ProductCustomProperties", fields: [product_id], references: [id])
+
+  @@map("tblcustomproperties")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+model Order {
+  id              Int         @id @default(autoincrement())
+  userId          Int
+  sellerStoreId   Int
+  totalAmount     Decimal     @db.Decimal(10, 2)
+  status          OrderStatus @default(PENDING)
+  paymentMethod   String
+  paymentStatus   PaymentStatus @default(PENDING)
+  orderedAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user            User        @relation(fields: [userId], references: [id])
+  sellerStore     SellerStore @relation(fields: [sellerStoreId], references: [id])
+  orderItems      OrderItem[]
+
+  @@map("tblorders")
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2)
+
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("tblorderitems")
 }

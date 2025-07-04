@@ -23,9 +23,21 @@ export const typeDefs = `
         created_at: String
         seller: SellerInfo!
     }
-
     type SellerInfo {
         company_name: String!
     }
+    type ProductBrief {
+        id: ID!
+        title: String!
+        product_details: String
+        tags: [String!]!
+        image: String
+        mrp: Float
+        current_price: Float
+    }
 
+    type GetProductsPaginatedResponse {
+        items: [ProductBrief!]!
+        nextCursor: Int
+    }
 `
