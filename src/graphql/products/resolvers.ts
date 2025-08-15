@@ -64,7 +64,28 @@ const queries = {
 }
 
 const mutations = {
-
+  createProduct: async (_: any, { input }: any) => {
+    return prismaClient.product.create({
+      data: {
+        title: input.title,
+        seller_id: input.seller_id,
+        rating: input.rating ?? null,
+        mrp: input.mrp ?? null,
+        image: input.image ?? null,
+        current_price: input.current_price ?? null,
+        offers: input.offers ?? [],
+        tags: input.tags ?? [],
+        highlights: input.highlights ?? [],
+        product_details: input.product_details ?? null,
+        manufacturer_details: input.manufacturer_details ?? null,
+        marketer_details: input.marketer_details ?? null,
+        country_of_origin: input.country_of_origin ?? null,
+        expires_on_or_after: input.expires_on_or_after
+          ? new Date(input.expires_on_or_after)
+          : null,
+      },
+    });
+  },
 }
 
 export const resolvers = { queries, mutations }

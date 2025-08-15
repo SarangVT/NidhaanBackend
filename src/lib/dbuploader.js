@@ -1,6 +1,6 @@
 const axios = require("axios");
 const fs = require("fs");
-const products = JSON.parse(fs.readFileSync("./products.json", "utf-8"));
+const products = JSON.parse(fs.readFileSync("./products_updated.json", "utf-8"));
 
 const BASE_URL = "http://localhost:7700";
 const API_KEY = "sarang";

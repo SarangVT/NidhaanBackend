@@ -7,6 +7,56 @@ import { OAuth2Client } from 'google-auth-library';
 const JWT_SECRET = process.env.JWT_SECRET!;
 
 const queries = {
+    getUserAddresses: async (_: any, { userId }: { userId: number }) => {
+    try {
+        const user = await prismaClient.user.findUnique({
+        where: { id: userId },
+        });
+
+        if (!user) {
+        throw new GraphQLError("User not found", {
+            extensions: { code: "NOT_FOUND" },
+        });
+        }
+
+        const addresses = await prismaClient.userAddress.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        });
+
+        return addresses;
+    } catch (error: any) {
+        console.error("Error fetching addresses:", error);
+        throw new GraphQLError("Failed to fetch addresses", {
+        extensions: { code: "INTERNAL_SERVER_ERROR" },
+        });
+    }
+    },
+    getUserCartCount: async (_: any, { userId }: { userId: number }) => {
+        return await prismaClient.cartItem.count({
+            where: { userId },
+        });
+    },
+    getUserCartItems: async (_: any, { userId }: { userId: number }) => {
+        return await prismaClient.cartItem.findMany({
+            where: { userId },
+            select: {
+            id: true,
+            userId: true,
+            productId: true,
+            quantity: true,
+            product: {
+                select: {
+                    id: true,
+                    title: true,
+                    mrp: true,
+                    current_price: true,
+                    image: true,
+                },
+            },
+            },
+        });
+    },
 
 }
 
@@ -21,8 +71,7 @@ const queries = {
 // }
 
 const mutations = {
-    createUser: async (
-    __: any,
+    createUser: async (__: any,
     {
         firstName,
         lastName,
@@ -62,16 +111,14 @@ const mutations = {
             phone: true,
         },
         });
-
         const token = jwt.sign(
         { userId: fullUser.id, email: fullUser.email, phone: fullUser.phone },
         JWT_SECRET,
         { expiresIn: "7d" }
         );
-
         return {
-        token,
-        user: fullUser,
+            token,
+            user: fullUser,
         };
     } catch (error: any) {
         if (error.code === "P2002") {
@@ -200,6 +247,111 @@ const mutations = {
     //   });
     // }
     // }
+
+    createUserAddress: async (_: any,
+    args: {
+        userId: number,
+        name?: string,
+        phone?: string,
+        pincode?: string,
+        address?: string,
+        locality?: string,
+        city?: string,
+        state?: string,
+        landmark?: string,
+        isDefault?: boolean
+    }
+    ) => {
+    try {
+        const { userId, isDefault, ...rest } = args;
+        if (!userId) {
+            throw new GraphQLError("userId is required to create an address.", {
+                extensions: { code: "BAD_USER_INPUT" },
+            });
+        }
+
+        const user = await prismaClient.user.findUnique({ where: { id: userId } });
+        if (!user) {
+        throw new GraphQLError("User not found", {
+            extensions: { code: "NOT_FOUND" },
+        });
+        }
+        if (isDefault) {
+            await prismaClient.userAddress.updateMany({
+                where: {
+                userId,
+                isDefault: true,
+                },
+                data: {
+                isDefault: false,
+                },
+            });
+        }
+
+        await prismaClient.userAddress.create({
+        data: { userId, isDefault, ...rest }
+        });
+        return true;
+    } catch (error: any) {
+        console.error("Error creating user address:", error);
+        throw new GraphQLError("Failed to create address", {
+        extensions: { code: "INTERNAL_SERVER_ERROR" },
+        });
+    }
+    },
+    setDefaultAddress: async (_: any, { addressId}: {addressId: number}) => {
+        const address = await prismaClient.userAddress.findUnique({ where: { id: addressId } });
+        if (!address) throw new Error("Address not found");
+        await prismaClient.userAddress.updateMany({
+            where: { userId: address.userId, isDefault: true },
+            data: { isDefault: false },
+        });
+        await prismaClient.userAddress.update({
+            where: { id: addressId },
+            data: { isDefault: true },
+        });
+        return true;
+    },
+    addCartItem: async (_: any, { userId, productId, quantity = 1 }: { userId: number; productId: number; quantity?: number }) => {
+        try {
+            await prismaClient.cartItem.upsert({
+            where: {
+                userId_productId: {
+                userId,
+                productId,
+                },
+            },
+            update: {
+                quantity: { increment: quantity ?? 1 },
+            },
+            create: {
+                userId,
+                productId,
+                quantity: quantity ?? 1,
+            },
+            });
+            return true;
+        } catch (err) {
+            console.error("Failed to add to cart", err);
+            return false;
+        }
+    },
+    removeCartItem: async (_: any, { userId, productId }: { userId: number; productId: number }) => {
+        try {
+            await prismaClient.cartItem.delete({
+            where: {
+                userId_productId: {
+                userId,
+                productId,
+                },
+            },
+            });
+            return true;
+        } catch (err) {
+            console.error("Error removing cart item:", err);
+            return false;
+        }
+    }
 
 }
 

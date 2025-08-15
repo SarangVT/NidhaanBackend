@@ -3,6 +3,7 @@ export const typeDefs = `
         id: ID!
         title: String!
         product_details: String
+        image: String
     }
     type Product {
         id: ID!
@@ -39,5 +40,39 @@ export const typeDefs = `
     type GetProductsPaginatedResponse {
         items: [ProductBrief!]!
         nextCursor: Int
+    }
+    input CreateProductInput {
+        title: String!
+        seller_id: Int!
+        rating: Float
+        mrp: Float
+        image: String
+        current_price: Float
+        offers: [String!]
+        tags: [String!]
+        highlights: [String!]
+        product_details: String
+        manufacturer_details: String
+        marketer_details: String
+        country_of_origin: String
+        expires_on_or_after: String
+    }
+    type ProductUpload {
+        id: Int!
+        title: String!
+        seller_id: Int!
+        rating: Float
+        mrp: Float
+        image: String
+        current_price: Float
+        offers: [String!]
+        tags: [String!]
+        highlights: [String!]
+        product_details: String
+        manufacturer_details: String
+        marketer_details: String
+        country_of_origin: String
+        expires_on_or_after: String
+        created_at: String!
     }
 `

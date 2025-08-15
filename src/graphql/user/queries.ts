@@ -1,3 +1,5 @@
 export const queries = `
-    hello: String
+    getUserAddresses(userId: Int!): [Address]
+    getUserCartItems(userId: Int!): [CartItem]
+    getUserCartCount(userId: Int!): Int!
 `

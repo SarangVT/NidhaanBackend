@@ -8,24 +8,46 @@ datasource db {
 }
 
 model User {
-  id          Int    @id @default(autoincrement())
-  firstName   String    @map("first_name")
-  lastName    String    @map("last_name")
-  email       String    @unique
-  phone       String    @unique
-  password    String
-  gender      Gender?
-  dateOfBirth DateTime? @map("date_of_birth")
-  country     String?   @default("India")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  orders      Order[]
-  @@map("users")
+  id           Int    @id @default(autoincrement())
+  firstName    String    @map("first_name")
+  lastName     String    @map("last_name")
+  email        String    @unique
+  phone        String    @unique
+  password     String
+  gender       Gender?
+  dateOfBirth  DateTime? @map("date_of_birth")
+  country      String?   @default("India")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  orders       Order[]
+  addresses    UserAddress[]
+  cartItems    CartItem[]
+  appointments Appointment[]
+  @@map("tblusers")
+}
+
+model UserAddress {
+  id        Int    @id @default(autoincrement())
+  userId    Int
+  user      User   @relation(fields: [userId], references: [id])
+
+  name      String?
+  phone     String?
+  pincode   String?
+  address   String?
+  locality  String?
+  city      String?
+  state     String?
+  landmark  String?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("tbluseraddresses")
 }
 
 enum Gender {
   Male
   Female
-  other
+  Other
 }
 
 model Seller {
@@ -44,6 +66,7 @@ model Seller {
   documents         SellerDocument[]  @relation("SellerToDocuments")
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
+  @@map("tblsellers")
 }
 
 model SellerStore {
@@ -65,6 +88,7 @@ model SellerStore {
   longitude         Float?
   acceptsReturns    Boolean           @default(false)
   orders            Order[]
+  @@map("tblsellerstores")
 }
 
 model SellerDocument {
@@ -74,6 +98,7 @@ model SellerDocument {
   type       DocumentType
   url        String
   uploadedAt DateTime @default(now())
+  @@map("tblsellerdocuments")
 }
 
 enum NotificationMethod {
@@ -119,6 +144,7 @@ model Product {
   customProperties     CustomProperty[]    @relation("ProductCustomProperties")
   reviews              ProductReview[]     @relation("ProductToReviews")
   orders               OrderItem[]
+  cartItems            CartItem[]
   @@map("tblproducts")
 }
 
@@ -191,4 +217,73 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id])
 
   @@map("tblorderitems")
+}
+
+model CartItem {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  productId Int
+  quantity  Int
+
+  user      User    @relation(fields: [userId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+  @@map("tblcartitems")
+}
+
+model Doctor {
+  id                   Int              @id @default(autoincrement())
+  name                 String?
+  email                String?          @unique
+  phone                String?          @unique
+  password             String?
+  isGoogleLogin        Boolean          @default(false)
+  experience           String?
+  languages            String[]
+  qualifications       String?
+  specializations      String[]
+  location             String?
+  hospital             String?
+  fees                 Int?
+  image                String?
+  description          String?
+  registrationComplete Boolean          @default(false)
+  slotRules            DoctorSlotRule[]
+  appointments         Appointment[]
+  @@map("tbldoctors")
+}
+
+model DoctorSlotRule {
+  id          Int      @id @default(autoincrement())
+  doctorId    Int
+  daysOfWeek  Int[]
+  startTime   String
+  endTime     String
+  durationMin Int
+
+  doctor      Doctor   @relation(fields: [doctorId], references: [id])
+  @@map("tbldoctorslotrules")
+}
+
+model Appointment {
+  id        String   @id @default(cuid())
+  doctorId  Int
+  userId    Int
+  date      DateTime
+  time      String
+  duration  Int
+  status    AppointmentStatus @default(SCHEDULED)
+  amount    Int
+
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  @@map("tblappointments")
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
 }

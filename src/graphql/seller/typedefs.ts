@@ -15,8 +15,8 @@ export const typeDefs = `
         OTHER
     }
     input DocumentInput {
-        url: String!,
-        type: DocumentType,
+        url: String!
+        type: DocumentType
         sellerId: String
     }
     type PresignedUrl {

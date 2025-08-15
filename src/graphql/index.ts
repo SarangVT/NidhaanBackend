@@ -2,6 +2,7 @@ import { ApolloServer } from "@apollo/server";
 import { User } from "./user";
 import { Product } from "./products";
 import { Seller } from "./seller";
+import { Doctor } from "./doctor";
 
 async function createApolloGraphQlServer() {
     const gqlserver = new ApolloServer({
@@ -9,14 +10,18 @@ async function createApolloGraphQlServer() {
         ${User.typeDefs}
         ${Product.typeDefs}
         ${Seller.typeDefs}
+        ${Doctor.typeDefs}
         type Query {
             ${User.queries}
             ${Product.queries}
             ${Seller.queries}
+            ${Doctor.queries}
         }
         type Mutation {
             ${User.mutations}
             ${Seller.mutations}
+            ${Product.mutations}
+            ${Doctor.mutations}
         }
     `,
     resolvers: {
@@ -24,11 +29,13 @@ async function createApolloGraphQlServer() {
             ...Product.resolvers.queries,
             ...User.resolvers.queries,
             ...Seller.resolvers.queries,
+            ...Doctor.resolvers.queries,
         },
         Mutation: {
             ...Product.resolvers.mutations,
             ...User.resolvers.mutations,
             ...Seller.resolvers.mutations,
+            ...Doctor.resolvers.mutations
         }
     },
     });
