@@ -248,10 +248,26 @@ model Doctor {
   fees                 Int?
   image                String?
   description          String?
+  gstNumber            String?
+  accountHolderName    String?
+  bankAccountNumber    String?
+  bankIFSCCode         String?
   registrationComplete Boolean          @default(false)
   slotRules            DoctorSlotRule[]
   appointments         Appointment[]
+  certificates         DoctorCertificate[]
+
   @@map("tbldoctors")
+}
+
+model DoctorCertificate {
+  id        Int      @id @default(autoincrement())
+  type      String
+  url       String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  doctorId  Int
+  createdAt DateTime @default(now())
+  @@map("tbldoctorcertificates")
 }
 
 model DoctorSlotRule {

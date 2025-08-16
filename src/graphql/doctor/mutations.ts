@@ -1,6 +1,7 @@
 export const mutations = `
-  createDoctor(email: String, password: String!, phone: String): String
+  createDoctor(name: String!, email: String!, password: String!, phone: String!): AuthDoctorResponse
   createBasicDetails(
+    id: Int!,
     name: String!
     qualifications: String!
     specializations: [String!]!
@@ -11,6 +12,7 @@ export const mutations = `
     languages: [String!]!
     experience: String!
   ): DoctorCreationRes
-  verifyDoctor(email: String!, password: String!, phone: String!): AuthDoctorResponse!
-
+  verifyDoctor(email: String, password: String!, phone: String): AuthDoctorResponse
+  uploadDoctorDocument(document: DoctorDocumentInput!, gstNumber: String): Int!
+  updateDoctorBankDetails(accountHolderName: String!, bankAccountNumber: String!, bankIFSCCode: String!): Int!
 `;

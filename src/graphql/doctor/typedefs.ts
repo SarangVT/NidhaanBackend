@@ -3,8 +3,9 @@ export const typeDefs = `
         id: Int!
     }
     type AuthDoctorResponse {
-        token: String!
-        doctor: DoctorAuth!
+        id: Int!
+        registrationComplete: Boolean!
+        email: String!
     }
     type Doctor {
         id: Int!
@@ -27,5 +28,9 @@ export const typeDefs = `
         name: String!
         email: String!
         phone: String!
+    }
+    input DoctorDocumentInput {
+        url: String!
+        type: String!
     }
 `
