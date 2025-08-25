@@ -242,7 +242,6 @@ model Doctor {
   experience           String?
   languages            String[]
   qualifications       String?
-  specializations      String[]
   location             String?
   hospital             String?
   fees                 Int?
@@ -252,12 +251,31 @@ model Doctor {
   accountHolderName    String?
   bankAccountNumber    String?
   bankIFSCCode         String?
+  registrationNo       String?
+  pauseAllBookings     Boolean          @default(false)
   registrationComplete Boolean          @default(false)
+  specialities         DoctorSpeciality[]
   slotRules            DoctorSlotRule[]
+  slotOverrides        DoctorSlotOverride[]
   appointments         Appointment[]
   certificates         DoctorCertificate[]
-
   @@map("tbldoctors")
+}
+
+model Speciality {
+  id       Int                @id @default(autoincrement())
+  name     String              @unique
+  doctors  DoctorSpeciality[]
+  @@map("tblspeciality")
+}
+
+model DoctorSpeciality {
+  doctorId     Int
+  specialityId Int
+  doctor       Doctor     @relation(fields: [doctorId], references: [id])
+  speciality   Speciality @relation(fields: [specialityId], references: [id])
+  @@id([doctorId, specialityId])
+  @@map("tbldoctorspeciality")
 }
 
 model DoctorCertificate {
@@ -271,19 +289,31 @@ model DoctorCertificate {
 }
 
 model DoctorSlotRule {
-  id          Int      @id @default(autoincrement())
-  doctorId    Int
-  daysOfWeek  Int[]
-  startTime   String
-  endTime     String
-  durationMin Int
-
-  doctor      Doctor   @relation(fields: [doctorId], references: [id])
+  id        Int      @id @default(autoincrement())
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  doctorId  Int
+  dayOfWeek Int      // 0=Sunday .. 6=Saturday
+  slots     Json     // e.g. [{ start: "10:00", end: "13:00" }, { start: "14:00", end: "16:00" }]
+  duration  Int      // in minutes (ex: 30)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   @@map("tbldoctorslotrules")
 }
 
+model DoctorSlotOverride {
+  id        Int      @id @default(autoincrement())
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  doctorId  Int
+  date      DateTime
+  slots     Json     // same format: [{ start, end }, ...]
+  duration  Int      // in minutes
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("tbldoctorslotoverrides")
+}
+
 model Appointment {
-  id        String   @id @default(cuid())
+  id        Int   @id @default(autoincrement())
   doctorId  Int
   userId    Int
   date      DateTime
@@ -291,7 +321,6 @@ model Appointment {
   duration  Int
   status    AppointmentStatus @default(SCHEDULED)
   amount    Int
-
   doctor    Doctor   @relation(fields: [doctorId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
   @@map("tblappointments")

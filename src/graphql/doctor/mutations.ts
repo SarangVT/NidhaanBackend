@@ -15,4 +15,5 @@ export const mutations = `
   verifyDoctor(email: String, password: String!, phone: String): AuthDoctorResponse
   uploadDoctorDocument(document: DoctorDocumentInput!, gstNumber: String): Int!
   updateDoctorBankDetails(accountHolderName: String!, bankAccountNumber: String!, bankIFSCCode: String!): Int!
+  saveDoctorSchedule(rules: [DoctorSlotRuleInput!]!, overrides: [DoctorSlotOverrideInput!]!): SaveDoctorScheduleResponse!
 `;
